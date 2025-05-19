@@ -1,0 +1,91 @@
+// RoomBookingApp.jsx
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { format } from 'date-fns';
+
+const initialRooms = [
+  { id: 1, name: 'Room A', bookings: [] },
+  { id: 2, name: 'Room B', bookings: [] },
+  { id: 3, name: 'Room C', bookings: [] },
+];
+
+const RoomBookingApp = () => {
+  const [rooms, setRooms] = useState(initialRooms);
+  const [selectedRoom, setSelectedRoom] = useState(null);
+  const [user, setUser] = useState('');
+  const [bookingDate, setBookingDate] = useState('');
+
+  const handleBooking = (roomId) => {
+    if (!user || !bookingDate) return alert('Please enter your name and select a date');
+    setRooms(prev => prev.map(room => {
+      if (room.id === roomId) {
+        const isBooked = room.bookings.some(b => b.date === bookingDate);
+        if (isBooked) {
+          alert('Room already booked on this date');
+          return room;
+        }
+        return {
+          ...room,
+          bookings: [...room.bookings, { user, date: bookingDate }]
+        };
+      }
+      return room;
+    }));
+  };
+
+  const handleCancel = (roomId, date) => {
+    setRooms(prev => prev.map(room => {
+      if (room.id === roomId) {
+        return {
+          ...room,
+          bookings: room.bookings.filter(b => !(b.date === date && b.user === user))
+        };
+      }
+      return room;
+    }));
+  };
+
+  return (
+    <div className="p-6 space-y-6">
+      <h1 className="text-2xl font-bold">Campus Room Booking</h1>
+
+      <div className="space-y-2">
+        <input
+          type="text"
+          placeholder="Enter your name"
+          value={user}
+          onChange={(e) => setUser(e.target.value)}
+          className="border p-2 rounded w-full"
+        />
+        <input
+          type="date"
+          value={bookingDate}
+          onChange={(e) => setBookingDate(e.target.value)}
+          className="border p-2 rounded w-full"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {rooms.map(room => (
+          <Card key={room.id} className="space-y-2">
+            <CardContent>
+              <h2 className="text-xl font-semibold">{room.name}</h2>
+              <ul className="text-sm text-gray-600 mb-2">
+                {room.bookings.map((b, idx) => (
+                  <li key={idx}>{b.date} - {b.user}</li>
+                ))}
+              </ul>
+              <Button onClick={() => handleBooking(room.id)}>Book Room</Button>
+              <Button variant="destructive" onClick={() => handleCancel(room.id, bookingDate)} className="ml-2">
+                Cancel Booking
+              </Button>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default RoomBookingApp;
